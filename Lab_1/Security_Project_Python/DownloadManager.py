@@ -1,6 +1,7 @@
 import concurrent
 from pprint import pprint
 from concurrent import futures
+from PubSub import events
 
 from pip._vendor import requests
 
@@ -26,8 +27,7 @@ class DownloadManager:
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = executor.map(self.collect_links, links_from_json)
-        for result in results:
-            pprint(result)
+        events.publish("download_ended", results)
 
     def get_links_from_json(self, json):
         links_from_json = []

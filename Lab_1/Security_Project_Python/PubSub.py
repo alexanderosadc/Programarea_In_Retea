@@ -2,15 +2,11 @@ class EventChannel(object):
     def __init__(self):
         self.subscribers = {}
 
-    def unsubscribe(self, event, callback):
-        if event is not None or event != "" \
-                and event in self.subscribers.keys():
-            self.subscribers[event] = list(
-                filter(
-                    lambda x: x is not callback,
-                    self.subscribers[event]
-                )
-            )
+    def create_event(self, event):
+        self.subscribers[event] = [self.print_subscribe_message]
+
+    def print_subscribe_message(self, callback):
+        print("Event Raised")
 
     def subscribe(self, event, callback):
         if not callable(callback):
@@ -20,7 +16,8 @@ class EventChannel(object):
             raise ValueError("Event cant be empty")
 
         if event not in self.subscribers.keys():
-            self.subscribers[event] = [callback]
+            raise ValueError("Event does not exist")
+            # self.subscribers[event] = [callback]
         else:
             self.subscribers[event].append(callback)
 
@@ -31,3 +28,7 @@ class EventChannel(object):
                     callback(args)
                 else:
                     callback()
+
+
+events = EventChannel()
+events.create_event("download_ended")
