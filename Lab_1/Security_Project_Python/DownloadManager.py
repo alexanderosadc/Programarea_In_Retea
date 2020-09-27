@@ -1,8 +1,7 @@
 import concurrent
-from pprint import pprint
 from concurrent import futures
 from PubSub import events
-
+import queue
 from pip._vendor import requests
 
 
@@ -14,6 +13,7 @@ class DownloadManager:
         self.headers = {
             'X-Access-Token': self.get_token()
         }
+        self.data_queue = queue.Queue()
 
     def get_token(self):
         response = requests.get(url=self.register_url)
@@ -26,8 +26,8 @@ class DownloadManager:
         links_from_json = self.get_links_from_json(response.json())
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            results = executor.map(self.collect_links, links_from_json)
-        events.publish("download_ended", results)
+            executor.map(self.collect_links, links_from_json)
+        events.publish("download_ended", self.data_queue)
 
     def get_links_from_json(self, json):
         links_from_json = []
@@ -43,14 +43,14 @@ class DownloadManager:
         links_from_json = self.get_links_from_json(response.json())
         if links_from_json:
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                results = executor.map(self.collect_links, links_from_json)
+                executor.map(self.collect_links, links_from_json)
         else:
             results = []
 
         if 'mime_type' in response_json:
-            data_to_send = [(response_json['data'], response_json['mime_type'])]
+            data_to_send = [response_json['data'], response_json['mime_type']]
         else:
-            data_to_send = [(response_json['data'], 'json')]
+            data_to_send = [response_json['data'], 'json']
 
         data_to_send.extend(results)
-        return data_to_send
+        self.data_queue.put(data_to_send)
