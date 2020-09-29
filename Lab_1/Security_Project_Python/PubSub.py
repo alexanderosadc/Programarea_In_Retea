@@ -17,7 +17,6 @@ class EventChannel(object):
 
         if event not in self.subscribers.keys():
             raise ValueError("Event does not exist")
-            # self.subscribers[event] = [callback]
         else:
             self.subscribers[event].append(callback)
 
