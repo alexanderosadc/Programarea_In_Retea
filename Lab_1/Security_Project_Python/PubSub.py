@@ -3,10 +3,10 @@ class EventChannel(object):
         self.subscribers = {}
 
     def create_event(self, event):
-        self.subscribers[event] = [self.print_subscribe_message]
+        self.subscribers[event] = []
 
     def print_subscribe_message(self, callback):
-        print("Event Raised")
+        print("Subscribed: ")
 
     def subscribe(self, event, callback):
         if not callable(callback):
@@ -30,4 +30,5 @@ class EventChannel(object):
 
 
 events = EventChannel()
-events.create_event("download_ended")
+events.create_event('download_ended')
+events.create_event('parsing_finished')
