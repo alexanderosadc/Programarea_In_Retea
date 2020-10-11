@@ -27,6 +27,7 @@ class Parser:
                 list_with_elements.extend(self.parse_csv(item[0]))
             callback.task_done()
         list_with_elements = self.merge_dictionaries(list_with_elements)
+        pprint(list_with_elements)
         events.publish("parsing_finished", list_with_elements)
 
     def merge_dictionaries(self, list_of_dict):
