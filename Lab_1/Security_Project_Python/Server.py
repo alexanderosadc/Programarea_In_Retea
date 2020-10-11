@@ -23,22 +23,24 @@ class Server:
         return str_to_send
 
     def connection_with_client(self, conn, addr):
-        with conn:
+        while True:
             print('Connected by', addr)
             data = conn.recv(1024)
             if data:
                 data = data.decode("utf-8")
+                if data.strip() == 'quit':
+                    conn.close()
+                    break
+
                 list_with_response_data = data.split(' ')
                 if list_with_response_data[0] == 'SelectColumn' and \
                         len(list_with_response_data) == 2:
-                    print("ColumnSelected")
                     data_to_send = self.select_data(list_with_response_data[1].strip())
                     conn.sendall(data_to_send.encode("utf-8"))
-                else:
-                    continue
-            else:
-                conn.sendall(data)
-                conn.close()
+
+                # else:
+                #     conn.sendall(data)
+                #     conn.close()
 
 
     def start_server(self, list_with_dict):
@@ -47,8 +49,10 @@ class Server:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sc:
             sc.bind((self.HOST, self.PORT))
             sc.listen()
-
-            while True:
-                conn, addr = sc.accept()
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    executor.submit(self.connection_with_client, )
+            with concurrent.futures.ThreadPoolExecutor(10) as executor:
+                while True:
+                    try:
+                        conn, addr = sc.accept()
+                        executor.submit(self.connection_with_client, conn, addr)
+                    except IOError:
+                        sc.close()
