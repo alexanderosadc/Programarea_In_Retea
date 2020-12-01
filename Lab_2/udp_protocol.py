@@ -33,26 +33,35 @@ class Socket:
         self.sock.bind((host, port))
         self.current_sent_packet = Packet()
         self.retransmission_number = 0
-        self.private_key = rand.randint(100, 10000)
-        self.security_key = 0
+        self.private_key = rand.randint(100, 1000)
 
 
-    def generate_secret_formula(self, public_key_g, public_key_n, sent_private_key):
-        if sent_private_key == 0:
-            self.security_key = int(pow(public_key_g, self.private_key, public_key_n))
+    def generate_secret_formula(self, public_key_g, public_key_n, sent_private_key, last_verification):
+        print("g=" + str(public_key_g))
+        print("n=" + str(public_key_n))
+        print("private_key=" + str(self.private_key))
+        print("sent_private_key=" + str(sent_private_key))
+        if sent_private_key == -1:
+            print('First Time')
+            self.private_key = pow(public_key_g, self.private_key, public_key_n)
+        elif last_verification:
+            self.private_key = pow(self.private_key, sent_private_key, public_key_n)
         else:
-            self.security_key = int(pow(sent_private_key, self.private_key, public_key_n ))
+            print('Second Time')
+            self.private_key = pow(sent_private_key, self.private_key, public_key_n)
+            print(self.private_key)
 
     def send_handshake_client(self):
         packet = Packet()
-        packet.header['public_key_n'] = rand.randint(100, 10000)
-        packet.header['public_key_g'] = rand.randint(100, 10000)
-        self.generate_secret_formula(packet.header['public_key_g'], packet.header['public_key_n'], 0)
+        packet.header['public_key_n'] = rand.randint(100, 1000)
+        packet.header['public_key_g'] = rand.randint(100, 1000)
+        self.generate_secret_formula(packet.header['public_key_g'], packet.header['public_key_n'], -1, False)
         # self.security_key = int(pow(packet.header['public_key_g'], self.private_key, packet.header['public_key_n']))
         # packet.header['message'] = self.security_key
-        packet_in_bytes = self.make_packet(str(self.security_key), packet, False)
-        to_address = (packet.header['host_to_send'], packet.header['port_to_send'])
-        self.sock.sendto(packet_in_bytes, to_address)
+        self.send_hadnshake(packet)
+        # packet_in_bytes = self.make_packet(str(self.security_key), packet, False)
+        # to_address = (packet.header['host_to_send'], packet.header['port_to_send'])
+        # self.sock.sendto(packet_in_bytes, to_address)
 
 
     def recieve_handshake_server(self):
@@ -63,19 +72,23 @@ class Socket:
 
                 self.host_to_send = recieved_packet['current_host']
                 self.port_to_send = recieved_packet['current_port']
-                self.send_hadnshake_server()
 
-                self.generate_secret_formula(recieved_packet['public_key_g'], recieved_packet['public_key_n'], int(recieved_packet['message']))
+                packet = Packet()
+                packet.header['public_key_g'] = recieved_packet['public_key_g']
+                packet.header['public_key_n'] = recieved_packet['public_key_n']
 
+                self.generate_secret_formula(recieved_packet['public_key_g'], recieved_packet['public_key_n'], -1, False)
+                self.send_hadnshake(packet)
+                self.generate_secret_formula(recieved_packet['public_key_g'], recieved_packet['public_key_n'], int(recieved_packet['message']), True)
             else:
-                print(recieved_packet['message'])
-                print(self.security_key)
+                print(str(self.private_key))
                 break
 
 
-    def send_hadnshake_server(self):
-        packet = Packet()
-        packet_in_bytes = self.make_packet(str(self.security_key), packet, False)
+    def send_hadnshake(self, packet):
+        packet.header['current_host'] = self.current_host
+        packet.header['current_port'] = self.current_port
+        packet_in_bytes = self.make_packet(str(self.private_key), packet, False)
         to_address = (packet.header['host_to_send'], packet.header['port_to_send'])
         self.sock.sendto(packet_in_bytes, to_address)
         self.retransmission_number += 1
@@ -88,13 +101,14 @@ class Socket:
             self.port_to_send = recieved_packet['current_port']
 
             self.generate_secret_formula(recieved_packet['public_key_g'], recieved_packet['public_key_n'],
-                                         int(recieved_packet['message']))
-            self.send_hadnshake_server()
+                                         int(recieved_packet['message']), False)
+
+            packet = Packet()
+            packet.header['public_key_g'] = recieved_packet['public_key_g']
+            packet.header['public_key_n'] = recieved_packet['public_key_n']
+            self.send_hadnshake(packet)
+            print(self.private_key)
             break
-
-
-
-
 
     #Client
     def connect_to_addr(self, host, port):
