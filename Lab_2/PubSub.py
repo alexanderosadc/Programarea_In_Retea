@@ -27,6 +27,3 @@ class EventChannel(object):
                     callback(args)
                 else:
                     callback()
-
-
-events = EventChannel()

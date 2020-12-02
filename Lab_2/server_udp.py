@@ -1,5 +1,4 @@
-from udp_protocol import Socket
+from security_layer import Security
 
-server_sock = Socket('localhost', 8080)
+server_sock = Security('localhost', 8080)
 server_sock.recieve_handshake_server()
-# server_sock.receive_data()
