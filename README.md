@@ -57,5 +57,5 @@ The main idea was to have somethink similar to the simplified TCP/IP pocket. Cla
         def transform_to_bytes(self) -> bytes:
             return bytes(json.dumps(self.header).encode('utf-8'))
 #### security_layer.py            
- Security level is consisting of diffi heiman key protocol exchange and asymetric cryptography merhod to encrypt the data. After handshake based on diffie heiman, goes the cryptography for the message.
+ Security level is consisting of diffi heiman key protocol exchange and asymetric cryptography merhod to encrypt the data. After handshake based on diffie heiman, the shared key is used for the encrypting and decrypting messages.
  
