@@ -3,6 +3,7 @@ import json
 import random as rand
 from udp_protocol import Packet, Socket
 
+
 class Security(Socket):
 
     def __init__(self, host, port):
@@ -35,6 +36,7 @@ class Security(Socket):
 
             self.host_to_send = recieved_packet['current_host']
             self.port_to_send = recieved_packet['current_port']
+            self.public_key = recieved_packet['public_key_g']
 
             packet = Packet()
             packet.header['public_key_g'] = recieved_packet['public_key_g']
@@ -74,6 +76,7 @@ class Security(Socket):
             data, addr = self.sock.recvfrom(BUFF_SIZE)
             recieved_packet = json.loads(data.decode('utf-8'))
             if not recieved_packet['handshake']:
+                self.public_key = recieved_packet['public_key_g']
                 self.host_to_send = recieved_packet['current_host']
                 self.port_to_send = recieved_packet['current_port']
 
@@ -86,6 +89,6 @@ class Security(Socket):
 
                 self.send_hadnshake(packet)
             else:
-                self.send('BLKJfsafasaf', False)
+                self.send('Alex', False)
                 self.receive_data()
                 break
