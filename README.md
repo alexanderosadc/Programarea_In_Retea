@@ -30,7 +30,7 @@ Project consist of 4 files:
 #### udp_protocol.py
 The main idea was to have somethink similar to the simplified TCP/IP pocket. Class Packet consist of dictionary which represent the pocket itself and with function which helps to make pocket and to transform the pocket in bytes for transmission.
 
-'class Packet:
+    class Packet:
     def __init__(self, host='localhost', port=8080):
         self.header = {
             'current_host': host,
@@ -55,4 +55,4 @@ The main idea was to have somethink similar to the simplified TCP/IP pocket. Cla
         return packet
 
     def transform_to_bytes(self) -> bytes:
-        return bytes(json.dumps(self.header).encode('utf-8')) '
+        return bytes(json.dumps(self.header).encode('utf-8'))
