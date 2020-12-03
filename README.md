@@ -31,28 +31,31 @@ Project consist of 4 files:
 The main idea was to have somethink similar to the simplified TCP/IP pocket. Class Packet consist of dictionary which represent the pocket itself and with function which helps to make pocket and to transform the pocket in bytes for transmission.
 
     class Packet:
-    def __init__(self, host='localhost', port=8080):
-        self.header = {
-            'current_host': host,
-            'current_port': port,
-            'host_to_send': 0,
-            'port_to_send': 0,
-            'checksum': '',
-            'ack_flag': False,
-            'message': '',
-            'public_key_n': 0,
-            'public_key_g': 0,
-            'handshake': False,
-        }
+        def __init__(self, host='localhost', port=8080):
+            self.header = {
+                'current_host': host,
+                'current_port': port,
+                'host_to_send': 0,
+                'port_to_send': 0,
+                'checksum': '',
+                'ack_flag': False,
+                'message': '',
+                'public_key_n': 0,
+                'public_key_g': 0,
+                'handshake': False,
+            }
 
-    def make_packet(self, message, packet, ack_flag, host_to_send, port_to_send):
-        packet.header['host_to_send'] = host_to_send
-        packet.header['port_to_send'] = port_to_send
-        packet.header['message'] = message
-        packet.header['ack_flag'] = ack_flag
-        packet.header['checksum'] = hashlib.md5(message.encode('utf-8')).hexdigest()
+        def make_packet(self, message, packet, ack_flag, host_to_send, port_to_send):
+            packet.header['host_to_send'] = host_to_send
+            packet.header['port_to_send'] = port_to_send
+            packet.header['message'] = message
+            packet.header['ack_flag'] = ack_flag
+            packet.header['checksum'] = hashlib.md5(message.encode('utf-8')).hexdigest()
 
-        return packet
+            return packet
 
-    def transform_to_bytes(self) -> bytes:
-        return bytes(json.dumps(self.header).encode('utf-8'))
+        def transform_to_bytes(self) -> bytes:
+            return bytes(json.dumps(self.header).encode('utf-8'))
+#### security_layer.py            
+ Security level is consisting of diffi heiman key protocol exchange and asymetric cryptography merhod to encrypt the data. After handshake based on diffie heiman, goes the cryptography for the message.
+ 
